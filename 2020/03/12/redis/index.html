@@ -1,0 +1,1544 @@
+<!DOCTYPE html>
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+<html class="theme-next muse use-motion" lang="zh-CN">
+<head><meta name="generator" content="Hexo 3.8.0">
+  <meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2">
+
+<link rel="stylesheet" href="/css/main.css?v=7.1.2">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=7.1.2">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=7.1.2">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=7.1.2">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=7.1.2" color="#222">
+
+
+
+
+
+
+
+<script id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Muse',
+    version: '7.1.2',
+    sidebar: {"position":"left","display":"post","offset":12,"onmobile":false,"dimmer":false},
+    back2top: true,
+    back2top_sidebar: false,
+    fancybox: false,
+    fastclick: false,
+    lazyload: false,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+  
+
+
+
+
+  <meta name="description" content="缓存经典架构">
+<meta name="keywords" content="面试-redis">
+<meta property="og:type" content="article">
+<meta property="og:title" content="redis">
+<meta property="og:url" content="http://yoursite.com/2020/03/12/redis/index.html">
+<meta property="og:site_name" content="佐伊">
+<meta property="og:description" content="缓存经典架构">
+<meta property="og:locale" content="zh-CN">
+<meta property="og:image" content="http://yoursite.com/2020/03/12/redis/reds-arc.png">
+<meta property="og:image" content="http://yoursite.com/2020/03/12/redis/%E4%BC%A0%E9%98%BB%E5%A1%9EIO%E6%A8%A1%E5%9E%8B.png">
+<meta property="og:image" content="http://yoursite.com/2020/03/12/redis/select%E6%A8%A1%E5%9E%8B.png">
+<meta property="og:image" content="http://yoursite.com/2020/03/12/redis/sds.png">
+<meta property="og:image" content="http://yoursite.com/2020/03/12/redis/pubsub.png">
+<meta property="og:image" content="http://yoursite.com/2020/03/12/redis/loadflow.png">
+<meta property="og:updated_time" content="2020-03-14T13:34:25.109Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="redis">
+<meta name="twitter:description" content="缓存经典架构">
+<meta name="twitter:image" content="http://yoursite.com/2020/03/12/redis/reds-arc.png">
+
+
+
+  <link rel="alternate" href="/atom.xml" title="佐伊" type="application/atom+xml">
+
+
+
+  
+  
+  <link rel="canonical" href="http://yoursite.com/2020/03/12/redis/">
+
+
+
+<script id="page.configurations">
+  CONFIG.page = {
+    sidebar: "",
+  };
+</script>
+
+  <title>redis | 佐伊</title>
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .motion-element,
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-title { opacity: initial; }
+
+  .use-motion .logo,
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-CN">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+    
+<a href="https://github.com/jasonzhangz">
+<img width="149" height="149" style="position: absolute; top: 0; right: 0; border: 0;" src="https://github.blog/wp-content/uploads/2008/12/forkme_right_darkblue_121621.png?resize=149%2C149" class="attachment-full size-full" alt="Fork me on GitHub" data-recalc-dims="1">
+</a>
+
+    
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">佐伊</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+    
+      
+        <p class="site-subtitle">唯有坚持 请相信时间的力量</p>
+      
+    
+    
+  </div>
+
+  <div class="site-nav-toggle">
+    <button aria-label="切换导航栏">
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  
+    <ul id="menu" class="menu">
+      
+        
+        
+        
+          
+          <li class="menu-item menu-item-home">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/" rel="section"><i class="menu-item-icon fa fa-fw fa-home"></i> <br>首页</a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-about">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/about/" rel="section"><i class="menu-item-icon fa fa-fw fa-user"></i> <br>关于</a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-archives">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/archives/" rel="section"><i class="menu-item-icon fa fa-fw fa-archive"></i> <br>归档</a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-tags">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/tags/" rel="section"><i class="menu-item-icon fa fa-fw fa-tags"></i> <br>标签</a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-categories">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/categories/" rel="section"><i class="menu-item-icon fa fa-fw fa-th"></i> <br>分类</a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-articlplan">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/articlplan" rel="section"><i class="menu-item-icon fa fa-fw fa-heartbeat"></i> <br>文章计划</a>
+
+  </li>
+
+      
+      
+        <li class="menu-item menu-item-search">
+          
+            <a href="javascript:;" class="popup-trigger">
+          
+            
+              <i class="menu-item-icon fa fa-search fa-fw"></i> <br>搜索</a>
+        </li>
+      
+    </ul>
+  
+
+  
+    
+
+  
+
+  
+    <div class="site-search">
+      
+  <div class="popup search-popup local-search-popup">
+  <div class="local-search-header clearfix">
+    <span class="search-icon">
+      <i class="fa fa-search"></i>
+    </span>
+    <span class="popup-btn-close">
+      <i class="fa fa-times-circle"></i>
+    </span>
+    <div class="local-search-input-wrapper">
+      <input autocomplete="off" placeholder="搜索..." spellcheck="false" type="text" id="local-search-input">
+    </div>
+  </div>
+  <div id="local-search-result"></div>
+</div>
+
+
+
+    </div>
+  
+</nav>
+
+
+
+  
+
+
+
+</div>
+    </header>
+
+    
+
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2020/03/12/redis/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="jason_zhangz@163.com">
+      <meta itemprop="description" content="一只猴子的学习园地">
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="佐伊">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">redis
+
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+
+            
+            
+            
+
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+
+              
+                
+              
+
+              <time title="创建时间：2020-03-12 21:52:13" itemprop="dateCreated datePublished" datetime="2020-03-12T21:52:13+08:00">2020-03-12</time>
+            
+
+            
+              
+
+              
+                
+                <span class="post-meta-divider">|</span>
+                
+
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">更新于</span>
+                
+                <time title="修改时间：2020-03-14 21:34:25" itemprop="dateModified" datetime="2020-03-14T21:34:25+08:00">2020-03-14</time>
+              
+            
+          </span>
+
+          
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/技术/" itemprop="url" rel="index"><span itemprop="name">技术</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+            
+              
+              <span class="post-comments-count">
+                <span class="post-meta-divider">|</span>
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-comment-o"></i>
+                </span>
+            
+                <span class="post-meta-item-text">评论数：</span>
+                <a href="/2020/03/12/redis/#comments" itemprop="discussionUrl">
+                  <span class="post-comments-count valine-comment-count" data-xid="/2020/03/12/redis/" itemprop="commentCount"></span>
+                </a>
+              </span>
+            
+          
+
+          
+          
+            <span id="/2020/03/12/redis/" class="leancloud_visitors" data-flag-title="redis">
+              <span class="post-meta-divider">|</span>
+              <span class="post-meta-item-icon">
+                <i class="fa fa-eye"></i>
+              </span>
+              
+                <span class="post-meta-item-text">阅读次数：</span>
+              
+                <span class="leancloud-visitors-count"></span>
+            </span>
+          
+
+          
+            <span class="post-meta-divider">|</span>
+            <span class="post-meta-item-icon">
+            <i class="fa fa-eye"></i>
+             阅读次数： 
+            <span class="busuanzi-value" id="busuanzi_value_page_pv"></span>
+            </span>
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <h3 id="缓存经典架构"><a href="#缓存经典架构" class="headerlink" title="缓存经典架构"></a>缓存经典架构</h3><p><img src="/2020/03/12/redis/reds-arc.png" alt="缓存应用的架构"></p>
+<a id="more"></a>
+
+<h3 id="缓存中间件-Memcache-和-Redis的区别"><a href="#缓存中间件-Memcache-和-Redis的区别" class="headerlink" title="缓存中间件 - Memcache 和 Redis的区别"></a>缓存中间件 - Memcache 和 Redis的区别</h3><ul>
+<li><p>Memcache   代码层次类似Hash</p>
+<ul>
+<li>支持简单的数据类型</li>
+<li>不支持数据持久化存储</li>
+<li>不支持主从同步</li>
+<li>不支持分片</li>
+</ul>
+</li>
+<li><p>Redis</p>
+<ul>
+<li>数据类型丰富</li>
+<li>支持数据磁盘持久化存储</li>
+<li>支持主从</li>
+<li>支持分片</li>
+</ul>
+</li>
+</ul>
+<h3 id="为什么Redis能这么快"><a href="#为什么Redis能这么快" class="headerlink" title="为什么Redis能这么快"></a>为什么Redis能这么快</h3><ul>
+<li>完全基于内存，绝大部分请求是纯粹的内存操作，执行效率高。</li>
+<li>数据结构简单，对数据操作也简单</li>
+<li>采用单线程，单线程也能处理高并发请求，可启动多实例，构建集群</li>
+<li>使用多路I/O复用模型，非阻塞IO</li>
+</ul>
+<h3 id="多路复用模型"><a href="#多路复用模型" class="headerlink" title="多路复用模型"></a>多路复用模型</h3><p><img src="/2020/03/12/redis/%E4%BC%A0%E9%98%BB%E5%A1%9EIO%E6%A8%A1%E5%9E%8B.png" alt="传阻塞IO模型"></p>
+<p>传统的阻塞I/O模型，如果文件不可以，则会一直阻塞中，这样就导致，其他的读写操作被等待</p>
+<p><img src="/2020/03/12/redis/select%E6%A8%A1%E5%9E%8B.png" alt="select模型"></p>
+<p>在linux中，select方法可以同时监控多个文件描述符的可读可写 情况，当某些文件描述符可读或者可写的时候，select方法就会返回可读可写的文件描述符的个数</p>
+<h4 id="Redis采用的是I-O多路复用函数：-epoll-kqueue-evport-select"><a href="#Redis采用的是I-O多路复用函数：-epoll-kqueue-evport-select" class="headerlink" title="Redis采用的是I/O多路复用函数： epoll/kqueue/evport/select?"></a>Redis采用的是I/O多路复用函数： epoll/kqueue/evport/select?</h4><ul>
+<li>因地制宜，根据编译平台的不同，选用不同的函数，提供给上层应用统一的接口</li>
+<li>优先选择时间复杂度为O(1)的I/o多路复用函数作为底层实现<ul>
+<li>linux  -  epoll , mac - kqueque 等</li>
+</ul>
+</li>
+<li>以时间复杂度为O(n)的select作为保底，会扫描全部的文件描述符，时间复杂度差</li>
+<li>基于react设计模式监听I/O事件</li>
+</ul>
+<h3 id="Redis的数据类型"><a href="#Redis的数据类型" class="headerlink" title="Redis的数据类型"></a>Redis的数据类型</h3><ol>
+<li>String：最基本的数据类型，二进制安全（可以包含任何数据，如图片，序列化的对象）。最大可存储512M</li>
+</ol>
+<blockquote>
+<p> String 的底层是<strong>简单动态字符串</strong> sds </p>
+<p><img src="/2020/03/12/redis/sds.png" alt="sds"></p>
+<p>其他涉及的底层数据结构<br>链表 字典  跳跃表 数据集合 压缩列表 对象 </p>
+</blockquote>
+<ol>
+<li>Hash：String元素组成的字典，适合用于存储对象 hmset hget</li>
+<li>List：列表，按照String元素插入顺序排序（后进先出 大约40亿个成员 <strong>最新消息排行榜</strong>） lpush lrange</li>
+<li>Set : String 元素组成的无序集合，通过哈希表实现，不允许重复<strong>(微博中关注人，粉丝存在于集合中 共同关注，喜好等功能 交集 并集 叉集</strong> ) sadd smembers</li>
+<li>Sorted Set ： 通过分数来给集合中的成员进行从小到大的排序，不重复，每个成员都会关联一个double的分数，通过这个分数来排序 zadd  zrangebyscore</li>
+<li>用于计数的HyperLog，用于支持存储地理位置信息的Geo</li>
+</ol>
+<h3 id="从海量Key里面查询出某一固定的前缀的Key"><a href="#从海量Key里面查询出某一固定的前缀的Key" class="headerlink" title="从海量Key里面查询出某一固定的前缀的Key"></a>从海量Key里面查询出某一固定的前缀的Key</h3><ul>
+<li>KEYS pattern：  查找所有符合给定模式pattern的key。一次性返回所有匹配的key，如果key的数据量过大，会使服务卡顿 ，可能会对线上业务产生影响，可能会阻塞服务</li>
+<li>SCAN cursor [MATCH pattern] [COUNT count] :  无阻塞的提取出指定模式的key列表，返回少量元素，可以用于生产环境</li>
+</ul>
+<h3 id="如何通过Redis实现分布式锁"><a href="#如何通过Redis实现分布式锁" class="headerlink" title="如何通过Redis实现分布式锁"></a>如何通过Redis实现分布式锁</h3><p>分布式锁是控制分布式系统或不同系统之间共同访问共享资源的一种锁的实现，当不同系统访问共享资源的时候，需要通过互斥的方式，保证一致性。</p>
+<h4 id="分布式锁需要解决的问题"><a href="#分布式锁需要解决的问题" class="headerlink" title="分布式锁需要解决的问题"></a>分布式锁需要解决的问题</h4><ul>
+<li>互斥性，任意时刻只能有一个客户端获取锁</li>
+<li>安全性，锁只能被持有该锁的客户端删除</li>
+<li>死锁，持有锁的某些客户端因为某些原因宕机而无法正常释放锁，导致其他客户端无法获取到该锁，提供相应机制</li>
+<li>容错，当部分节点宕机的时候，客户端依然能够获取锁和释放锁</li>
+</ul>
+<h4 id="实现分布式锁原理"><a href="#实现分布式锁原理" class="headerlink" title="实现分布式锁原理"></a>实现分布式锁原理</h4><p>在执行业务代码前，先执行SETNX指令，根据返回值，确定key是否插入，若为插入循环调用；若插入成功，则当当前key设置过期时间，同时执行业务代码 </p>
+<p><strong>SETNX key value</strong> : 如果key不存在，则创建并赋值，操作是原子的</p>
+<ul>
+<li>时间复杂度为：O(1)</li>
+<li>返回值：设置成功，返回1；设置失败，返回0</li>
+</ul>
+<p><strong>EXPIRE key seconds</strong> ： 操作是原子的</p>
+<ul>
+<li>设置key的生存时间，当key过期时（生存时间为0），会被自动删除</li>
+</ul>
+<h4 id="伪代码-一"><a href="#伪代码-一" class="headerlink" title="伪代码 一"></a>伪代码 一</h4><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@AutoWired</span></span><br><span class="line">RedisServie redisService </span><br><span class="line"></span><br><span class="line"><span class="keyword">long</span> status = redisService.setnx(key, <span class="string">"1"</span>);</span><br><span class="line"><span class="keyword">if</span> (status == <span class="number">1</span>) &#123;</span><br><span class="line">    redisService.expire(key, expire);</span><br><span class="line">    <span class="comment">// do something</span></span><br><span class="line">    doSomeThing();</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<blockquote>
+<p>上述伪代码可能产生问题。当代码执行4行结束，程序挂了，那么当前的key就会被一直占用，意味着其他线程就无法得到独占的资源。</p>
+<p>产生这种的原因就是：原子性得不到满足。SETNX 和EXPIRE 操作是原子性的，但是这两个操作的组合是原子性的</p>
+</blockquote>
+<p>为了解决上述产生的问题，redis在2.6.12，版本以后可以通过 SET指令将SETNX 和EXPIRE 操作融合在一起，这个整体是原子性操作。</p>
+<p><strong>SET key value [EX seconds] [PX milliseconds] [NX|XX]</strong></p>
+<ul>
+<li>EX seconds : 设置键的过期时间为second 秒</li>
+<li>PX milliseconds ： 设置键的过期时间为milliseconds毫秒</li>
+<li>NX：只在键不存在时，才对键进行设置操作  等同于SETNX </li>
+<li>XX：只在键已存在时，才对键进行设置操作  等同于SETNX</li>
+<li>SET 操作完成时，返回ok，否则返回nil</li>
+</ul>
+<h4 id="伪代码-二"><a href="#伪代码-二" class="headerlink" title="伪代码 二"></a>伪代码 二</h4><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@AutoWired</span></span><br><span class="line">RedisServie redisService </span><br><span class="line"></span><br><span class="line">String res = redisServic.set(lockKey,<span class="string">"NX"</span>,<span class="string">"ex"</span>,<span class="number">10</span>);</span><br><span class="line"><span class="keyword">if</span> (<span class="string">"Ok"</span>.equals(res)) &#123;</span><br><span class="line">    <span class="comment">// do something</span></span><br><span class="line">    doSomeThing();</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="大量的key同时过期的注意事项"><a href="#大量的key同时过期的注意事项" class="headerlink" title="大量的key同时过期的注意事项"></a>大量的key同时过期的注意事项</h3><ul>
+<li>集中过期，由于需要清除大量的key很耗时，所以会出现暂时的卡顿现象</li>
+<li>解决方案：在设置key的过期时间的时候，给每个key加上随机值</li>
+</ul>
+<h3 id="如何使用Redis做异步队列"><a href="#如何使用Redis做异步队列" class="headerlink" title="如何使用Redis做异步队列"></a>如何使用Redis做异步队列</h3><p>使用List作为队列，RPUSH生产消息，LPOP消费消息</p>
+<ul>
+<li>缺陷：没有等待队列里有值就直接消费；一个消息只能被一个客户端消费一次</li>
+<li>优化<ul>
+<li>可以通过在应用层引入sleep机制去调用LPOP重试</li>
+<li>可以使用BLPOP key timeout  阻塞直到队列有消息或者超时 ，只能被消费一次</li>
+</ul>
+</li>
+</ul>
+<p>pub/sub：主题订阅者模式</p>
+<ul>
+<li>发送者（pub）发送消息，订阅者（sub）接收消息</li>
+<li>订阅者可以订阅任意数量的频道（topic）</li>
+<li>优点：pub/sub能实现一条消息被N个消费者消费，同时可以使消费者只关注自己订阅的频道的数据</li>
+<li>缺点：消息的发布是无状态的，无法保证可达，无法保证在传输过程中消息是否丢失。对于发布者来说，消息是即发即失，也就是说，如果在发布者在发布消息到指定的频道时，恰巧订阅了当前频道的消费者下线了，那么在这个消费者重新上线以后，是接收不到该消息了。解决此类问题，需要使用专业的消息队列 kafka mq中间件</li>
+</ul>
+<p><img src="/2020/03/12/redis/pubsub.png" alt="pubsub"></p>
+<h3 id="Redis如何做持久化"><a href="#Redis如何做持久化" class="headerlink" title="Redis如何做持久化"></a>Redis如何做持久化</h3><h4 id="方式一：-RDB-快照持久化，保存某个时间点的全量数据快照，设置redis-conf文件"><a href="#方式一：-RDB-快照持久化，保存某个时间点的全量数据快照，设置redis-conf文件" class="headerlink" title="方式一： RDB-快照持久化，保存某个时间点的全量数据快照，设置redis.conf文件"></a>方式一： RDB-快照持久化，保存某个时间点的全量数据快照，设置redis.conf文件</h4><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">save "" 		#禁用rdb操作</span><br><span class="line">save 900 1 		#after 900 sec (15 min) if at least 1 key changed</span><br><span class="line">save 300 10		#after 300 sec (5 min) if at least 10 key changed</span><br><span class="line">save 60 10000	#after 60 sec (1 min) if at least 10000 key changed</span><br><span class="line"></span><br><span class="line">stop-writes-on-bgsave-error yes #当备份进程出错的时候，主进程就停止接收新的写入操作，保证持久化的一致性问题</span><br><span class="line">rdbcompression yes #备份的时候将rdb文件进行压缩，建议设置成no，因为设置成yes会带来消耗</span><br></pre></td></tr></table></figure>
+
+<p>SAVE： 阻塞Redis的服务进程，直到RDB文件被创建完毕。由于redis单线程模型，所以会阻塞所有客户端的请求。</p>
+<p><strong>BGSAGE：Fork出一个子进程来创建RDB文件，不阻塞服务器进程</strong>。</p>
+<p>自动化触发RDB持久化的方式</p>
+<ul>
+<li>根据redis.conf 配置里的SAVE m n 定时触发（用的是BGSAVE）</li>
+<li>主从复制，主节点自动触发</li>
+<li>执行Debug Reload</li>
+<li>执行Shutdown 且没有开启AOF持久化</li>
+</ul>
+<p>RDB方式存在缺点</p>
+<ul>
+<li>内存数据是全量同步，数量大会由于I/O而严重影响性能</li>
+<li>可能会因为Redis挂掉而丢失从前至最近一次快照期间的数据</li>
+</ul>
+<h4 id="方式二-AOF（Append-Only-File）持久化：保存写状态"><a href="#方式二-AOF（Append-Only-File）持久化：保存写状态" class="headerlink" title="方式二  AOF（Append-Only-File）持久化：保存写状态"></a>方式二  AOF（Append-Only-File）持久化：保存写状态</h4><p>AOF会记录下除了查询以外的所有变更数据库状态的指令，以append的形式追加保存到AOF文件中(增量)，实时性会更好，因此已成为主流的持久化方案。默认未开启AOF，在redis.conf文件中设置appendonly开启，默认文件是src\appendonly.aof</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">appendonly yes</span><br></pre></td></tr></table></figure>
+
+<p>在Redis的配置文件中存在三种不同的 AOF 持久化方式</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">appendfsync always    #每次有数据修改发生时都会写入AOF文件,这样会严重降低Redis的速度</span><br><span class="line">appendfsync everysec  #每秒钟同步一次，显示地将多个写命令同步到硬盘，推荐方式速度，安全</span><br><span class="line">appendfsync no        #让操作系统决定何时进行同步，默认操作系统把缓存区填满才开始同步</span><br></pre></td></tr></table></figure>
+
+<h4 id="数据恢复"><a href="#数据恢复" class="headerlink" title="数据恢复"></a>数据恢复</h4><p>对于RDB和AOF文件共存情况下的恢复流程</p>
+<p><img src="/2020/03/12/redis/loadflow.png" alt="loadflow"></p>
+<h4 id="RDB和AOF的优缺点"><a href="#RDB和AOF的优缺点" class="headerlink" title="RDB和AOF的优缺点"></a>RDB和AOF的优缺点</h4><ul>
+<li>RDB<ul>
+<li>优点：全量数据快照，文件小，恢复快</li>
+<li>缺点：无法保存最近一次快照之后的数据</li>
+</ul>
+</li>
+<li>AOF<ul>
+<li>优点：可读性高，适合保存增量数据，数据不容易丢失</li>
+<li>缺点：文件体积大，恢复时间长</li>
+</ul>
+</li>
+</ul>
+<h4 id="Redis-4-0-对于持久化机制的优化（结合AOF和RDB的互补）"><a href="#Redis-4-0-对于持久化机制的优化（结合AOF和RDB的互补）" class="headerlink" title="Redis 4.0 对于持久化机制的优化（结合AOF和RDB的互补）"></a><strong>Redis 4.0 对于持久化机制的优化（结合AOF和RDB的互补）</strong></h4><p>Redis 4.0 开始支持 RDB 和 AOF 的混合持久化（默认关闭，可以通过配置项 <code>aof-use-rdb-preamble</code> 开启）。</p>
+<p>如果把混合持久化打开，AOF 重写的时候就直接把 RDB 的内容写到 AOF 文件开头。这样做的好处是可以结合 RDB 和 AOF 的优点, 快速加载同时避免丢失过多的数据。当然缺点也是有的， AOF 里面的 RDB 部分是压缩格式不再是 AOF 格式，可读性较差。</p>
+
+      
+    </div>
+
+    
+
+    
+    
+    
+
+    
+
+    
+      
+    
+    
+      <div>
+        <div id="reward-container">
+  <div>如果觉得文章不错，给个打赏呗</div>
+  <button id="reward-button" disable="enable" onclick="var qr = document.getElementById(&quot;qr&quot;); qr.style.display = (qr.style.display === 'none') ? 'block' : 'none';">
+    打赏
+  </button>
+  <div id="qr" style="display: none;">
+
+    
+      
+      
+        
+      
+      <div style="display: inline-block">
+        <img src="/images/wechatpay.png" alt="jason_zhangz@163.com 微信支付">
+        <p>微信支付</p>
+      </div>
+    
+      
+      
+        
+      
+      <div style="display: inline-block">
+        <img src="/images/alipay.png" alt="jason_zhangz@163.com 支付宝">
+        <p>支付宝</p>
+      </div>
+    
+
+  </div>
+</div>
+
+      </div>
+    
+
+    
+
+  
+   <div>
+    <div>
+    
+        <div style="text-align:center;color: #ccc;font-size:14px;">-------------本文结束<i class="fa fa-paw"></i>感谢您的阅读-------------</div>
+    
+</div>
+    </div>
+  
+
+
+    <footer class="post-footer">
+      
+        
+          
+        
+        <div class="post-tags">
+          
+            <a href="/tags/面试-redis/" rel="tag"># 面试-redis</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2020/03/10/Atomic/" rel="next" title="原子类Atomic">
+                <i class="fa fa-chevron-left"></i> 原子类Atomic
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+  </div>
+
+
+          </div>
+          
+
+  
+    <div class="comments" id="comments">
+    </div>
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <p class="site-author-name" itemprop="name">jason_zhangz@163.com</p>
+              <div class="site-description motion-element" itemprop="description">一只猴子的学习园地</div>
+          </div>
+
+          
+            <nav class="site-state motion-element">
+              
+                <div class="site-state-item site-state-posts">
+                
+                  <a href="/archives/">
+                
+                    <span class="site-state-item-count">10</span>
+                    <span class="site-state-item-name">日志</span>
+                  </a>
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-categories">
+                  
+                    
+                      <a href="/categories/">
+                    
+                  
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">4</span>
+                    <span class="site-state-item-name">分类</span>
+                  </a>
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-tags">
+                  
+                    
+                      <a href="/tags/">
+                    
+                  
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">7</span>
+                    <span class="site-state-item-name">标签</span>
+                  </a>
+                </div>
+              
+            </nav>
+          
+
+          
+            <div class="feed-link motion-element">
+              <a href="/atom.xml" rel="alternate">
+                <i class="fa fa-rss"></i>
+                RSS
+              </a>
+            </div>
+          
+
+          
+
+          
+
+          
+
+          
+          
+
+          
+            
+          
+          
+
+        </div>
+      </div>
+
+      
+      <!--noindex-->
+        <div class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+            
+            
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#缓存经典架构"><span class="nav-number">1.</span> <span class="nav-text">缓存经典架构</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#缓存中间件-Memcache-和-Redis的区别"><span class="nav-number">2.</span> <span class="nav-text">缓存中间件 - Memcache 和 Redis的区别</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#为什么Redis能这么快"><span class="nav-number">3.</span> <span class="nav-text">为什么Redis能这么快</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#多路复用模型"><span class="nav-number">4.</span> <span class="nav-text">多路复用模型</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#Redis采用的是I-O多路复用函数：-epoll-kqueue-evport-select"><span class="nav-number">4.1.</span> <span class="nav-text">Redis采用的是I/O多路复用函数： epoll/kqueue/evport/select?</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Redis的数据类型"><span class="nav-number">5.</span> <span class="nav-text">Redis的数据类型</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#从海量Key里面查询出某一固定的前缀的Key"><span class="nav-number">6.</span> <span class="nav-text">从海量Key里面查询出某一固定的前缀的Key</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#如何通过Redis实现分布式锁"><span class="nav-number">7.</span> <span class="nav-text">如何通过Redis实现分布式锁</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#分布式锁需要解决的问题"><span class="nav-number">7.1.</span> <span class="nav-text">分布式锁需要解决的问题</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#实现分布式锁原理"><span class="nav-number">7.2.</span> <span class="nav-text">实现分布式锁原理</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#伪代码-一"><span class="nav-number">7.3.</span> <span class="nav-text">伪代码 一</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#伪代码-二"><span class="nav-number">7.4.</span> <span class="nav-text">伪代码 二</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#大量的key同时过期的注意事项"><span class="nav-number">8.</span> <span class="nav-text">大量的key同时过期的注意事项</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#如何使用Redis做异步队列"><span class="nav-number">9.</span> <span class="nav-text">如何使用Redis做异步队列</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Redis如何做持久化"><span class="nav-number">10.</span> <span class="nav-text">Redis如何做持久化</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#方式一：-RDB-快照持久化，保存某个时间点的全量数据快照，设置redis-conf文件"><span class="nav-number">10.1.</span> <span class="nav-text">方式一： RDB-快照持久化，保存某个时间点的全量数据快照，设置redis.conf文件</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#方式二-AOF（Append-Only-File）持久化：保存写状态"><span class="nav-number">10.2.</span> <span class="nav-text">方式二  AOF（Append-Only-File）持久化：保存写状态</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#数据恢复"><span class="nav-number">10.3.</span> <span class="nav-text">数据恢复</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#RDB和AOF的优缺点"><span class="nav-number">10.4.</span> <span class="nav-text">RDB和AOF的优缺点</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#Redis-4-0-对于持久化机制的优化（结合AOF和RDB的互补）"><span class="nav-number">10.5.</span> <span class="nav-text">Redis 4.0 对于持久化机制的优化（结合AOF和RDB的互补）</span></a></li></ol></li></ol></div>
+            
+
+          </div>
+        </div>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+  
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2020</span>
+  <span class="with-love" id="animate">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">jason_zhangz@163.com</span>
+
+  
+
+  
+</div>
+
+
+  <div class="powered-by">由 <a href="https://hexo.io" class="theme-link" rel="noopener" target="_blank">Hexo</a> 强力驱动 v3.8.0</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">主题 â€“ <a href="https://theme-next.org" class="theme-link" rel="noopener" target="_blank">NexT.Muse</a> v7.1.2</div>
+
+
+
+
+        
+<div class="busuanzi-count">
+  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+
+  
+    <span class="post-meta-item-icon">
+      <i class="fa fa-user"></i>
+    </span>
+    <span class="site-uv" title="总访客量">
+      <span class="busuanzi-value" id="busuanzi_value_site_uv"></span>
+    </span>
+  
+
+  
+    <span class="post-meta-divider">|</span>
+  
+
+  
+    <span class="post-meta-item-icon">
+      <i class="fa fa-eye"></i>
+    </span>
+    <span class="site-pv" title="总访问量">
+      <span class="busuanzi-value" id="busuanzi_value_site_pv"></span>
+    </span>
+  
+</div>
+
+
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+    
+
+    
+  </div>
+
+  
+
+<script>
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+    
+    
+  
+  <script color="0,0,255" opacity="0.5" zindex="-1" count="99" src="/lib/canvas-nest/canvas-nest.min.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  <script src="/lib/jquery/index.js?v=2.1.3"></script>
+
+  
+  <script src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+
+  
+  <script src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+
+
+  
+
+
+  <script src="/js/utils.js?v=7.1.2"></script>
+
+  <script src="/js/motion.js?v=7.1.2"></script>
+
+
+
+  
+  
+
+
+  <script src="/js/schemes/muse.js?v=7.1.2"></script>
+
+
+
+  
+  <script src="/js/scrollspy.js?v=7.1.2"></script>
+<script src="/js/post-details.js?v=7.1.2"></script>
+
+
+
+  
+
+
+  <script src="/js/next-boot.js?v=7.1.2"></script>
+
+
+  
+
+  
+
+  
+
+  
+  
+
+<script src="//cdn1.lncld.net/static/js/3.11.1/av-min.js"></script>
+
+
+
+<script src="//unpkg.com/valine/dist/Valine.min.js"></script>
+
+<script>
+  var GUEST = ['nick', 'mail', 'link'];
+  var guest = 'nick,mail,link';
+  guest = guest.split(',').filter(function(item) {
+    return GUEST.indexOf(item) > -1;
+  });
+  new Valine({
+    el: '#comments',
+    verify: false,
+    notify: false,
+    appId: '4hRv956khUma4cHOsKTkDaTi-gzGzoHsz',
+    appKey: 'Fqk4eXReFCScG2KQC858Lvbk',
+    placeholder: 'Just go go',
+    avatar: 'mm',
+    meta: guest,
+    pageSize: '10' || 10,
+    visitor: true,
+    lang: '' || 'zh-cn'
+  });
+</script>
+
+
+
+
+  
+
+
+  
+  <script>
+    // Popup Window;
+    var isfetched = false;
+    var isXml = true;
+    // Search DB path;
+    var search_path = "search.xml";
+    if (search_path.length === 0) {
+      search_path = "search.xml";
+    } else if (/json$/i.test(search_path)) {
+      isXml = false;
+    }
+    var path = "/" + search_path;
+    // monitor main search box;
+
+    var onPopupClose = function (e) {
+      $('.popup').hide();
+      $('#local-search-input').val('');
+      $('.search-result-list').remove();
+      $('#no-result').remove();
+      $(".local-search-pop-overlay").remove();
+      $('body').css('overflow', '');
+    }
+
+    function proceedsearch() {
+      $("body")
+        .append('<div class="search-popup-overlay local-search-pop-overlay"></div>')
+        .css('overflow', 'hidden');
+      $('.search-popup-overlay').click(onPopupClose);
+      $('.popup').toggle();
+      var $localSearchInput = $('#local-search-input');
+      $localSearchInput.attr("autocapitalize", "none");
+      $localSearchInput.attr("autocorrect", "off");
+      $localSearchInput.focus();
+    }
+
+    // search function;
+    var searchFunc = function(path, search_id, content_id) {
+      'use strict';
+
+      // start loading animation
+      $("body")
+        .append('<div class="search-popup-overlay local-search-pop-overlay">' +
+          '<div id="search-loading-icon">' +
+          '<i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>' +
+          '</div>' +
+          '</div>')
+        .css('overflow', 'hidden');
+      $("#search-loading-icon").css('margin', '20% auto 0 auto').css('text-align', 'center');
+
+      
+
+      $.ajax({
+        url: path,
+        dataType: isXml ? "xml" : "json",
+        async: true,
+        success: function(res) {
+          // get the contents from search data
+          isfetched = true;
+          $('.popup').detach().appendTo('.header-inner');
+          var datas = isXml ? $("entry", res).map(function() {
+            return {
+              title: $("title", this).text(),
+              content: $("content",this).text(),
+              url: $("url" , this).text()
+            };
+          }).get() : res;
+          var input = document.getElementById(search_id);
+          var resultContent = document.getElementById(content_id);
+          var inputEventFunction = function() {
+            var searchText = input.value.trim().toLowerCase();
+            var keywords = searchText.split(/[\s\-]+/);
+            if (keywords.length > 1) {
+              keywords.push(searchText);
+            }
+            var resultItems = [];
+            if (searchText.length > 0) {
+              // perform local searching
+              datas.forEach(function(data) {
+                var isMatch = false;
+                var hitCount = 0;
+                var searchTextCount = 0;
+                var title = data.title.trim();
+                var titleInLowerCase = title.toLowerCase();
+                var content = data.content.trim().replace(/<[^>]+>/g,"");
+                
+                var contentInLowerCase = content.toLowerCase();
+                var articleUrl = decodeURIComponent(data.url).replace(/\/{2,}/g, '/');
+                var indexOfTitle = [];
+                var indexOfContent = [];
+                // only match articles with not empty titles
+                if(title != '') {
+                  keywords.forEach(function(keyword) {
+                    function getIndexByWord(word, text, caseSensitive) {
+                      var wordLen = word.length;
+                      if (wordLen === 0) {
+                        return [];
+                      }
+                      var startPosition = 0, position = [], index = [];
+                      if (!caseSensitive) {
+                        text = text.toLowerCase();
+                        word = word.toLowerCase();
+                      }
+                      while ((position = text.indexOf(word, startPosition)) > -1) {
+                        index.push({position: position, word: word});
+                        startPosition = position + wordLen;
+                      }
+                      return index;
+                    }
+
+                    indexOfTitle = indexOfTitle.concat(getIndexByWord(keyword, titleInLowerCase, false));
+                    indexOfContent = indexOfContent.concat(getIndexByWord(keyword, contentInLowerCase, false));
+                  });
+                  if (indexOfTitle.length > 0 || indexOfContent.length > 0) {
+                    isMatch = true;
+                    hitCount = indexOfTitle.length + indexOfContent.length;
+                  }
+                }
+
+                // show search results
+
+                if (isMatch) {
+                  // sort index by position of keyword
+
+                  [indexOfTitle, indexOfContent].forEach(function (index) {
+                    index.sort(function (itemLeft, itemRight) {
+                      if (itemRight.position !== itemLeft.position) {
+                        return itemRight.position - itemLeft.position;
+                      } else {
+                        return itemLeft.word.length - itemRight.word.length;
+                      }
+                    });
+                  });
+
+                  // merge hits into slices
+
+                  function mergeIntoSlice(text, start, end, index) {
+                    var item = index[index.length - 1];
+                    var position = item.position;
+                    var word = item.word;
+                    var hits = [];
+                    var searchTextCountInSlice = 0;
+                    while (position + word.length <= end && index.length != 0) {
+                      if (word === searchText) {
+                        searchTextCountInSlice++;
+                      }
+                      hits.push({position: position, length: word.length});
+                      var wordEnd = position + word.length;
+
+                      // move to next position of hit
+
+                      index.pop();
+                      while (index.length != 0) {
+                        item = index[index.length - 1];
+                        position = item.position;
+                        word = item.word;
+                        if (wordEnd > position) {
+                          index.pop();
+                        } else {
+                          break;
+                        }
+                      }
+                    }
+                    searchTextCount += searchTextCountInSlice;
+                    return {
+                      hits: hits,
+                      start: start,
+                      end: end,
+                      searchTextCount: searchTextCountInSlice
+                    };
+                  }
+
+                  var slicesOfTitle = [];
+                  if (indexOfTitle.length != 0) {
+                    slicesOfTitle.push(mergeIntoSlice(title, 0, title.length, indexOfTitle));
+                  }
+
+                  var slicesOfContent = [];
+                  while (indexOfContent.length != 0) {
+                    var item = indexOfContent[indexOfContent.length - 1];
+                    var position = item.position;
+                    var word = item.word;
+                    // cut out 100 characters
+                    var start = position - 20;
+                    var end = position + 80;
+                    if(start < 0){
+                      start = 0;
+                    }
+                    if (end < position + word.length) {
+                      end = position + word.length;
+                    }
+                    if(end > content.length){
+                      end = content.length;
+                    }
+                    slicesOfContent.push(mergeIntoSlice(content, start, end, indexOfContent));
+                  }
+
+                  // sort slices in content by search text's count and hits' count
+
+                  slicesOfContent.sort(function (sliceLeft, sliceRight) {
+                    if (sliceLeft.searchTextCount !== sliceRight.searchTextCount) {
+                      return sliceRight.searchTextCount - sliceLeft.searchTextCount;
+                    } else if (sliceLeft.hits.length !== sliceRight.hits.length) {
+                      return sliceRight.hits.length - sliceLeft.hits.length;
+                    } else {
+                      return sliceLeft.start - sliceRight.start;
+                    }
+                  });
+
+                  // select top N slices in content
+
+                  var upperBound = parseInt('1');
+                  if (upperBound >= 0) {
+                    slicesOfContent = slicesOfContent.slice(0, upperBound);
+                  }
+
+                  // highlight title and content
+
+                  function highlightKeyword(text, slice) {
+                    var result = '';
+                    var prevEnd = slice.start;
+                    slice.hits.forEach(function (hit) {
+                      result += text.substring(prevEnd, hit.position);
+                      var end = hit.position + hit.length;
+                      result += '<b class="search-keyword">' + text.substring(hit.position, end) + '</b>';
+                      prevEnd = end;
+                    });
+                    result += text.substring(prevEnd, slice.end);
+                    return result;
+                  }
+
+                  var resultItem = '';
+
+                  if (slicesOfTitle.length != 0) {
+                    resultItem += "<li><a href='" + articleUrl + "' class='search-result-title'>" + highlightKeyword(title, slicesOfTitle[0]) + "</a>";
+                  } else {
+                    resultItem += "<li><a href='" + articleUrl + "' class='search-result-title'>" + title + "</a>";
+                  }
+
+                  slicesOfContent.forEach(function (slice) {
+                    resultItem += "<a href='" + articleUrl + "'>" +
+                      "<p class=\"search-result\">" + highlightKeyword(content, slice) +
+                      "...</p>" + "</a>";
+                  });
+
+                  resultItem += "</li>";
+                  resultItems.push({
+                    item: resultItem,
+                    searchTextCount: searchTextCount,
+                    hitCount: hitCount,
+                    id: resultItems.length
+                  });
+                }
+              })
+            };
+            if (keywords.length === 1 && keywords[0] === "") {
+              resultContent.innerHTML = '<div id="no-result"><i class="fa fa-search fa-5x"></i></div>'
+            } else if (resultItems.length === 0) {
+              resultContent.innerHTML = '<div id="no-result"><i class="fa fa-frown-o fa-5x"></i></div>'
+            } else {
+              resultItems.sort(function (resultLeft, resultRight) {
+                if (resultLeft.searchTextCount !== resultRight.searchTextCount) {
+                  return resultRight.searchTextCount - resultLeft.searchTextCount;
+                } else if (resultLeft.hitCount !== resultRight.hitCount) {
+                  return resultRight.hitCount - resultLeft.hitCount;
+                } else {
+                  return resultRight.id - resultLeft.id;
+                }
+              });
+              var searchResultList = '<ul class=\"search-result-list\">';
+              resultItems.forEach(function (result) {
+                searchResultList += result.item;
+              })
+              searchResultList += "</ul>";
+              resultContent.innerHTML = searchResultList;
+            }
+          }
+
+          if ('auto' === 'auto') {
+            input.addEventListener('input', inputEventFunction);
+          } else {
+            $('.search-icon').click(inputEventFunction);
+            input.addEventListener('keypress', function (event) {
+              if (event.keyCode === 13) {
+                inputEventFunction();
+              }
+            });
+          }
+
+          // remove loading animation
+          $(".local-search-pop-overlay").remove();
+          $('body').css('overflow', '');
+
+          proceedsearch();
+        }
+      });
+    }
+
+    // handle and trigger popup window;
+    $('.popup-trigger').click(function(e) {
+      e.stopPropagation();
+      if (isfetched === false) {
+        searchFunc(path, 'local-search-input', 'local-search-result');
+      } else {
+        proceedsearch();
+      };
+    });
+
+    $('.popup-btn-close').click(onPopupClose);
+    $('.popup').click(function(e){
+      e.stopPropagation();
+    });
+    $(document).on('keyup', function (event) {
+      var shouldDismissSearchPopup = event.which === 27 &&
+        $('.search-popup').is(':visible');
+      if (shouldDismissSearchPopup) {
+        onPopupClose();
+      }
+    });
+  </script>
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+
+<!-- 页面点击小红心 -->
+<script type="text/javascript" src="/js/love.js"></script>
+</body>
+</html>
